@@ -18,7 +18,7 @@ def convert_dict_to_array(obj, idx, initial=1):
     
 def thesession_setup(add_folder, add_data_item, import_manager):
     @import_manager.command
-    def thesession(path_to_csv_files):
+    def thesession(path_to_csv_files, max_recordings=None):
         '''Import data from CSV files provided by TheSession.org'''
         recordings = {}
         with open(os.path.join(path_to_csv_files, 'recordings.csv')) as csvfile:
@@ -34,6 +34,8 @@ def thesession_setup(add_folder, add_data_item, import_manager):
                                      (row['id'], row['track'], row['number']))
                 rec_track[row['number']] = row['tune']
 
+                if max_recordings and len(recordings) > int(max_recordings):
+                    break
         # #Now convert the tracks dicts into arrays, verifying they are not missing any keys.
         # #Too many are, so don't do this, at least for now.
         # for id in recordings:
