@@ -18,8 +18,10 @@ def convert_dict_to_array(obj, idx, initial=1):
     
 def thesession_setup(add_folder, add_data_item, import_manager):
     @import_manager.command
-    def thesession(path_to_csv_files, max_recordings=None):
+    def thesession(path_to_csv_files, recordings_max=None, tunes_max=None):
         '''Import data from CSV files provided by TheSession.org'''
+
+        print 'Importing recordings...'
         recordings = {}
         with open(os.path.join(path_to_csv_files, 'recordings.csv')) as csvfile:
             for row in csv.DictReader(csvfile):
@@ -34,7 +36,7 @@ def thesession_setup(add_folder, add_data_item, import_manager):
                                      (row['id'], row['track'], row['number']))
                 rec_track[row['number']] = row['tune']
 
-                if max_recordings and len(recordings) > int(max_recordings):
+                if recordings_max != None and len(recordings) > int(recordings_max):
                     break
         # #Now convert the tracks dicts into arrays, verifying they are not missing any keys.
         # #Too many are, so don't do this, at least for now.
@@ -49,3 +51,18 @@ def thesession_setup(add_folder, add_data_item, import_manager):
         # print json.dumps(dict(recordings.items()[:10]), indent=2)
         for k, v in recordings.items():
             print add_data_item('thesession/release/'+k, 'release', json.dumps(v, separators=(',', ':'), sort_keys=True))
+
+        print 'Importing tunes ...'
+        tunes = {}
+        with open(os.path.join(path_to_csv_files, 'tunes.csv')) as csvfile:
+            for row in csv.DictReader(csvfile):
+                settings = tunes.setdefault(row['tune'], {}).setdefault('settings', {})
+                if settings.has_key(row['setting']):
+                    raise ValueError('Duplicate setting ids: '+repr(row))
+                settings[row['setting']]=dict((k,v) for (k,v) in row.items() if k not in ('tune', 'setting'))
+                if tunes_max != None and len(tunes) > int(tunes_max):
+                    break
+
+        for k, v in tunes.items():
+            print k, v
+            print add_data_item('thesession/tune/'+k, 'work', json.dumps(v, separators=(',', ':'), sort_keys=True))
