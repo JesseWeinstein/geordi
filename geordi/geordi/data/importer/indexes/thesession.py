@@ -55,7 +55,7 @@ def thesession_setup(add_folder, add_data_item, import_manager):
         print 'Importing tunes ...'
         tunes = {}
         with open(os.path.join(path_to_csv_files, 'tunes.csv')) as csvfile:
-            for row in csv.DictReader(csvfile):
+            for row in csv.DictReader(csvfile, escapechar='\\'):
                 settings = tunes.setdefault(row['tune'], {}).setdefault('settings', {})
                 if settings.has_key(row['setting']):
                     raise ValueError('Duplicate setting ids: '+repr(row))
@@ -64,5 +64,4 @@ def thesession_setup(add_folder, add_data_item, import_manager):
                     break
 
         for k, v in tunes.items():
-            print k, v
             print add_data_item('thesession/tune/'+k, 'work', json.dumps(v, separators=(',', ':'), sort_keys=True))
