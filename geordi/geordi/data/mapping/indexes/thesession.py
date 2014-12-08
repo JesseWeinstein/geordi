@@ -11,5 +11,8 @@ thesession = {
     'tune': [Rule(['name'], ['work', 'name'])
              ],
     'event': [Rule(['event'], ['event', 'name'])
-              ]
+              ],
+    'session': [Rule(['name'], ['place', 'name'])
+                ]
+
 }

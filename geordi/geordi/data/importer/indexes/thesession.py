@@ -110,6 +110,17 @@ def thesession_setup(add_folder, add_data_item, import_manager):
         read_csv(path_to_csv_files, filename, limit, process_func)
         add_data_items_from_dict('thesession/event/', 'event', 'event', events)
 
+    @manager.command
+    def sessions(path_to_csv_files, filename='sessions.csv', limit=None):
+        """Import sessions as Places."""
+        print 'Importing sessions ...'
+        sessions = {}
+        def process_func(row):
+            sessions[row['id']]={k:row[k] for k in row.keys() if k != 'id'}
+            return len(sessions)
+
+        read_csv(path_to_csv_files, filename, limit, process_func)
+        add_data_items_from_dict('thesession/session/', 'place', 'name', sessions)
 
     @manager.command
     def all(path_to_csv_files):
@@ -117,3 +128,4 @@ def thesession_setup(add_folder, add_data_item, import_manager):
         recordings(path_to_csv_files)
         tunes(path_to_csv_files)
         events(path_to_csv_files)
+        sessions(path_to_csv_files)
