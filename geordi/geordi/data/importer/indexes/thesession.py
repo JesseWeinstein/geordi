@@ -91,7 +91,7 @@ def thesession_setup(add_folder, add_data_item, import_manager):
             if settings.has_key(row['setting']):
                 raise ValueError('Duplicate setting ids: '+repr(row))
 
-            settings[row['setting']]=dict((k,v) for (k,v) in row.items() if k not in ('tune', 'setting', 'name', 'type'))
+            settings[row['setting']]={k:row[k] for k in row.keys() if k not in ('tune', 'setting', 'name', 'type')}
 
             return len(tunes)
 
@@ -99,7 +99,21 @@ def thesession_setup(add_folder, add_data_item, import_manager):
         add_data_items_from_dict('thesession/tune/', 'work', 'name', tunes)
 
     @manager.command
+    def events(path_to_csv_files, filename='events.csv', limit=None):
+        """Import events as, well, Events."""
+        print 'Importing events ...'
+        events = {}
+        def process_func(row):
+            events[row['id']]={k:row[k] for k in row.keys() if k != 'id'}
+            return len(events)
+
+        read_csv(path_to_csv_files, filename, limit, process_func)
+        add_data_items_from_dict('thesession/event/', 'event', 'event', events)
+
+
+    @manager.command
     def all(path_to_csv_files):
         """Import all data."""
         recordings(path_to_csv_files)
         tunes(path_to_csv_files)
+        events(path_to_csv_files)

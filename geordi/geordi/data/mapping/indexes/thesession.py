@@ -9,5 +9,7 @@ thesession = {
                 Rule(['artist'], ['release', 'artists', 'unsplit'])
                 ],
     'tune': [Rule(['name'], ['work', 'name'])
-             ]
+             ],
+    'event': [Rule(['event'], ['event', 'name'])
+              ]
 }
