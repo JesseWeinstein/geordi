@@ -1,10 +1,10 @@
 import os.path, json, csv
 
-def add_while_checking_for_inconsistent_values(name, rec, row):
+def add_while_checking_for_inconsistent_values(name, rec, row, id_key='id'):
     val = rec.setdefault(name, row[name])
     if val != row[name]:
         raise ValueError("Inconsistent %s names for id#%s: \"%s\" != \"%s\"" %
-                         (name, row['id'], val, row[name]))
+                         (name, row[id_key], val, row[name]))
 
 def convert_dict_to_array(obj, idx, initial=1):
     d=obj[idx]
@@ -56,10 +56,13 @@ def thesession_setup(add_folder, add_data_item, import_manager):
         tunes = {}
         with open(os.path.join(path_to_csv_files, 'tunes.csv')) as csvfile:
             for row in csv.DictReader(csvfile, escapechar='\\'):
-                settings = tunes.setdefault(row['tune'], {}).setdefault('settings', {})
+                tune = tunes.setdefault(row['tune'], {})
+                add_while_checking_for_inconsistent_values('name', tune, row, 'setting')
+                add_while_checking_for_inconsistent_values('type', tune, row, 'setting')
+                settings = tune.setdefault('settings', {})
                 if settings.has_key(row['setting']):
                     raise ValueError('Duplicate setting ids: '+repr(row))
-                settings[row['setting']]=dict((k,v) for (k,v) in row.items() if k not in ('tune', 'setting'))
+                settings[row['setting']]=dict((k,v) for (k,v) in row.items() if k not in ('tune', 'setting', 'name', 'type'))
                 if tunes_max != None and len(tunes) > int(tunes_max):
                     break
 

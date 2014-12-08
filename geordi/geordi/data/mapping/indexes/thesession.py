@@ -8,6 +8,6 @@ thesession = {
                      transform=lambda val, *args, **kwargs: ' / '.join(v for (k,v) in sorted(val.items()))),
                 Rule(['artist'], ['release', 'artists', 'unsplit'])
                 ],
-    'tune': [Rule(['settings', 'name'], ['work', 'name'])
+    'tune': [Rule(['name'], ['work', 'name'])
              ]
 }
