@@ -1,3 +1,8 @@
+""" TheSession.org is a website focused on Celtic music.
+
+Database downloads are available from: https://github.com/adactio/TheSession-data
+"""
+
 import os.path, json, csv
 
 def add_while_checking_for_inconsistent_values(name, rec, row, id_key='id'):
