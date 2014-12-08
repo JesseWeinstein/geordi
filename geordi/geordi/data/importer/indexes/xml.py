@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import gzip
 import xmltodict
 import json
 
@@ -130,3 +131,15 @@ def xml_setup(add_folder, add_data_item, import_manager):
                     _import_ci_xml(os.path.join(root, file_name))
         else:
             _import_ci_xml(path)
+
+    @import_manager.command
+    def jamendo(filename_with_path):
+        """Import Jamendo's gzip'ed XML dump file."""
+
+        def handle(path, item):
+            albums = item.pop('Albums',{}).get('album', [])
+            id = item.pop('id')
+            add_data_item('jamendo/artist/'+id, 'artist', entity2json(item))
+            return True
+
+        xmltodict.parse(gzip.GzipFile(filename_with_path), item_depth=3, item_callback=handle)
