@@ -133,13 +133,36 @@ def xml_setup(add_folder, add_data_item, import_manager):
             _import_ci_xml(path)
 
     @import_manager.command
-    def jamendo(filename_with_path):
+    def jamendo(filename_with_path, limit=None):
         """Import Jamendo's gzip'ed XML dump file."""
 
-        def handle(path, item):
-            albums = item.pop('Albums',{}).get('album', [])
-            id = item.pop('id')
-            add_data_item('jamendo/artist/'+id, 'artist', entity2json(item))
-            return True
+        def extract(frm, k1, k2):
+            rtn = frm.pop(k1,{}).get(k2, [])
+            return [rtn] if type(rtn) is not list else rtn
 
-        xmltodict.parse(gzip.GzipFile(filename_with_path), item_depth=3, item_callback=handle)
+        def list_of_ids(thing):
+            return [x[u'id'] for x in thing]
+
+        def handle(path, item):
+            try:
+                handle.count += 1
+                albums = extract(item, u'Albums', u'album')
+                item[u'albums'] = list_of_ids(albums)
+                print 'artist', add_data_item('jamendo/artist/'+item.pop(u'id'), 'artist', entity2json(item))
+                for album in albums:
+                    tracks = extract(album, u'Tracks', u'track')
+                    album[u'tracks'] = list_of_ids(tracks)
+                    print 'release', add_data_item('jamendo/release/'+album.pop(u'id'), 'release', entity2json(album))
+                    for track in tracks:
+                        track['tags'] = extract(track, u'Tags', u'tag')
+                        print 'recording', add_data_item('jamendo/recording/'+track.pop(u'id'), 'recording', entity2json(track))
+
+                return limit is None or handle.count < int(limit)
+            except (TypeError, AttributeError):
+                raise ValueError, repr(sys.exc_info()[1]), sys.exc_info()[2]
+
+        handle.count = 0
+        try:
+            xmltodict.parse(gzip.GzipFile(filename_with_path), item_depth=3, item_callback=handle)
+        except xmltodict.ParsingInterrupted:
+            pass
